@@ -3,16 +3,19 @@ import random
 import threading
 import time
 from uuid import uuid4
-from colorama import Fore, init  
+from colorama import Fore, init
+import os
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
 init(autoreset=True)
 
-
-token = "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU"
-chat_id = '5290179758'
-# Add Discord webhook URL
-discord_webhook_url = "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL"
+# Use environment variables with fallbacks
+token = os.getenv("TELEGRAM_TOKEN", "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU")
+chat_id = os.getenv("TELEGRAM_CHAT_ID", '5290179758')
+discord_webhook_url = os.getenv("DISCORD_WEBHOOK", "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL")
 a = 0
 s = 0
 
