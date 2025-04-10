@@ -44,12 +44,6 @@ def oopp():
     v5 = random.choice(op)
 
     user1 = v1 + v1 + v5 + v2 + v3
-    v2 = random.choice(ooo)
-    v3 = random.choice(ooo)
-    v4 = random.choice(ooo)
-    v5 = random.choice(op)
-
-    user1 = v1 + v1 + v5 + v2 + v3
     user2 = v1 + v1 + v2 + v5 + v3
     user3 = v2 + v2 + v5 + v3 + v4
     user4 = v2 + v2 + v3 + v5 + v4
@@ -92,6 +86,7 @@ def oopp():
 
 
     return random.choice([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14, user15, user16, user17, user18, user19, user20, user21, user22, user23, user24, user25, user26, user27, user28, user29, user30, user31, user32, user33, user34, user35, user36, user37, user38]) 
+
 
 def send_to_discord(username):
     """Send username to Discord webhook"""
