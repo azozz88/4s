@@ -5,17 +5,17 @@ import time
 from uuid import uuid4
 from colorama import Fore, init
 import os
-from dotenv import load_dotenv
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# Load environment variables
-load_dotenv()
 
 init(autoreset=True)
 
-# Use environment variables with fallbacks
-token = os.getenv("TELEGRAM_TOKEN", "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU")
-chat_id = os.getenv("TELEGRAM_CHAT_ID", '5290179758')
-discord_webhook_url = os.getenv("DISCORD_WEBHOOK", "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL")
+
+token = "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU"
+chat_id = '5290179758'
+# Add Discord webhook URL
+discord_webhook_url = "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL"
 a = 0
 s = 0
 
@@ -38,6 +38,12 @@ headers = {
 
 def oopp():
     v1 = random.choice(om)
+    v2 = random.choice(ooo)
+    v3 = random.choice(ooo)
+    v4 = random.choice(ooo)
+    v5 = random.choice(op)
+
+    user1 = v1 + v1 + v5 + v2 + v3
     v2 = random.choice(ooo)
     v3 = random.choice(ooo)
     v4 = random.choice(ooo)
@@ -87,24 +93,22 @@ def oopp():
 
     return random.choice([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14, user15, user16, user17, user18, user19, user20, user21, user22, user23, user24, user25, user26, user27, user28, user29, user30, user31, user32, user33, user34, user35, user36, user37, user38]) 
 
+# إعداد جلسة طلبات مع إعادة المحاولة
+def create_session():
+    session = requests.Session()
+    retry = Retry(
+        total=5,
+        backoff_factor=0.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["POST", "GET"]
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
 
-def send_to_discord(username):
-    """Send username to Discord webhook"""
-    discord_data = {
-        "content": "",
-        "embeds": [{
-            "title": "Good User Instagram",
-            "description": f"Username: **{username}**",
-            "color": 5814783,  # Green color
-            "footer": {
-                "text": "dev: RL"
-            }
-        }]
-    }
-    try:
-        requests.post(discord_webhook_url, json=discord_data)
-    except Exception as e:
-        print(f"{Fore.RED}Error sending to Discord: {e}")
+# إنشاء جلسة واحدة للاستخدام في جميع الطلبات
+session = create_session()
 
 def a1():
     global a, s
@@ -119,7 +123,8 @@ def a1():
         }
 
         try:
-            response = requests.post(url, headers=headers, data=data).text
+            # استخدام الجلسة بدلاً من requests مباشرة
+            response = session.post(url, headers=headers, data=data, timeout=30).text
 
             if '"email_is_taken"' in response:
                 print(Fore.GREEN + f'Good User: {user}')  
@@ -133,18 +138,43 @@ def a1():
 -> dev : LEGEND
 ------------------------------------------
 '''
-                # Send to Telegram
-                requests.post(f'https://api.telegram.org/bot{token}/sendMessage', data={'chat_id': chat_id, 'text': message})
+                # إرسال إلى تيليجرام مع إعادة المحاولة
+                try:
+                    session.post(f'https://api.telegram.org/bot{token}/sendMessage', 
+                              data={'chat_id': chat_id, 'text': message},
+                              timeout=10)
+                except Exception as e:
+                    print(f"{Fore.YELLOW}Telegram notification failed: {e}")
                 
-                # Send to Discord webhook
+                # إرسال إلى ديسكورد
                 send_to_discord(user)
             else:
                 s += 1
 
             print(f"\r{Fore.GREEN}Good ✅ {a} | {Fore.RED}Ban ❌ {s}", end='', flush=True)
             
-        except requests.exceptions.RequestException:
-            time.sleep(0.5)
+        except Exception as e:
+            print(f"\r{Fore.RED}Error: {e}", end='', flush=True)
+            time.sleep(2)  # زيادة وقت الانتظار عند حدوث خطأ
+
+# تعديل وظيفة إرسال ديسكورد لاستخدام الجلسة
+def send_to_discord(username):
+    """Send username to Discord webhook"""
+    discord_data = {
+        "content": "",
+        "embeds": [{
+            "title": "Good User Instagram",
+            "description": f"Username: **{username}**",
+            "color": 5814783,  # Green color
+            "footer": {
+                "text": "dev: RL"
+            }
+        }]
+    }
+    try:
+        session.post(discord_webhook_url, json=discord_data, timeout=10)
+    except Exception as e:
+        print(f"{Fore.RED}Error sending to Discord: {e}")
 
 print(f"{Fore.GREEN}Good ✅ 0 | {Fore.RED}Ban ❌ 0\n")
 threads = []
