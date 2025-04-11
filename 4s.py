@@ -5,17 +5,17 @@ import time
 from uuid import uuid4
 from colorama import Fore, init
 import os
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
 init(autoreset=True)
 
-
-token = "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU"
-chat_id = '5290179758'
-# Add Discord webhook URL
-discord_webhook_url = "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL"
+# Use environment variables with fallbacks
+token = os.getenv("TELEGRAM_TOKEN", "7206423294:AAFvvpyL4oFovo-E8fOSA5AzHaeANeZGjtU")
+chat_id = os.getenv("TELEGRAM_CHAT_ID", '5290179758')
+discord_webhook_url = os.getenv("DISCORD_WEBHOOK", "https://discord.com/api/webhooks/1359929777162817819/-wBHa6QsJaQxQX8fjiHm6vol92FD4ZfjvCSlbRvb1BFM2FGQk0VA3fPd5_IZiSYm6ZEL")
 a = 0
 s = 0
 
@@ -36,75 +36,8 @@ headers = {
     'Accept-Encoding': 'gzip',
 }
 
-# إعداد جلسة طلبات مع إعادة المحاولة
-def create_session():
-    session = requests.Session()
-    retry = Retry(
-        total=3,  # Reduced from 5 to 3
-        backoff_factor=1.5,  # Increased from 0.5 to 1.5
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["POST", "GET"]
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session
-
-# إنشاء جلسة واحدة للاستخدام في جميع الطلبات
-session = create_session()
-
-# Add proxy rotation functionality
-proxies = []
-try:
-    with open(os.path.join(os.path.dirname(__file__), 'proxies.txt'), 'r') as f:
-        proxies = [line.strip() for line in f if line.strip()]
-    print(f"{Fore.CYAN}Loaded {len(proxies)} proxies")
-except Exception as e:
-    print(f"{Fore.YELLOW}No proxies loaded: {e}")
-
-def get_proxy():
-    if not proxies:
-        return None
-    return {"http": f"http://{random.choice(proxies)}", 
-            "https": f"http://{random.choice(proxies)}"}
-
-# Add rate limiting
-request_times = []
-MAX_REQUESTS_PER_MINUTE = 20  # Adjust this value based on Instagram's limits
-
-def rate_limited_request(method, url, **kwargs):
-    global request_times
-    
-    # Clean up old request times
-    current_time = time.time()
-    request_times = [t for t in request_times if current_time - t < 60]
-    
-    # Check if we've made too many requests in the last minute
-    if len(request_times) >= MAX_REQUESTS_PER_MINUTE:
-        sleep_time = 60 - (current_time - request_times[0]) + 1
-        print(f"{Fore.YELLOW}Rate limiting: sleeping for {sleep_time:.2f} seconds")
-        time.sleep(sleep_time)
-    
-    # Add current request time
-    request_times.append(time.time())
-    
-    # Use a proxy if available
-    if 'proxies' not in kwargs:
-        proxy = get_proxy()
-        if proxy:
-            kwargs['proxies'] = proxy
-    
-    # Make the request
-    return getattr(session, method)(url, **kwargs)
-
 def oopp():
     v1 = random.choice(om)
-    v2 = random.choice(ooo)
-    v3 = random.choice(ooo)
-    v4 = random.choice(ooo)
-    v5 = random.choice(op)
-
-    user1 = v1 + v1 + v5 + v2 + v3
     v2 = random.choice(ooo)
     v3 = random.choice(ooo)
     v4 = random.choice(ooo)
@@ -154,52 +87,6 @@ def oopp():
 
     return random.choice([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14, user15, user16, user17, user18, user19, user20, user21, user22, user23, user24, user25, user26, user27, user28, user29, user30, user31, user32, user33, user34, user35, user36, user37, user38]) 
 
-def a1():
-    global a, s
-    while True:
-        user = oopp()
-        data = {
-            "email": "abdo1@gmail.com",
-            "username": user,
-            "password": "Aa123456" + user,
-            "device_id": "android-" + str(uuid4()),
-            "guid": str(uuid4()),
-        }
-
-        try:
-            # Use rate limited request instead of direct session
-            response = rate_limited_request("post", url, headers=headers, data=data, timeout=30).text
-
-            if '"email_is_taken"' in response:
-                print(Fore.GREEN + f'Good User: {user}')  
-                a += 1
-
-                message = f'''
--> Good User Instagram
-------------------------------------------
--> User : {user}
-------------------------------------------
--> dev : LEGEND
-------------------------------------------
-'''
-                # إرسال إلى تيليجرام مع إعادة المحاولة
-                try:
-                    rate_limited_request("post", f'https://api.telegram.org/bot{token}/sendMessage', 
-                              data={'chat_id': chat_id, 'text': message},
-                              timeout=10)
-                except Exception as e:
-                    print(f"{Fore.YELLOW}Telegram notification failed: {e}")
-                
-                # إرسال إلى ديسكورد
-                send_to_discord(user)
-            else:
-                s += 1
-
-            print(f"\r{Fore.GREEN}Good ✅ {a} | {Fore.RED}Ban ❌ {s}", end='', flush=True)
-            
-        except Exception as e:
-            print(f"\r{Fore.RED}Error: {e}", end='', flush=True)
-            time.sleep(5)  # Increased from 2 to 5 seconds
 
 def send_to_discord(username):
     """Send username to Discord webhook"""
@@ -215,23 +102,53 @@ def send_to_discord(username):
         }]
     }
     try:
-        rate_limited_request("post", discord_webhook_url, json=discord_data, timeout=10)
+        requests.post(discord_webhook_url, json=discord_data)
     except Exception as e:
         print(f"{Fore.RED}Error sending to Discord: {e}")
 
+def a1():
+    global a, s
+    while True:
+        user = oopp()
+        data = {
+            "email": "abdo1@gmail.com",
+            "username": user,
+            "password": "Aa123456" + user,
+            "device_id": "android-" + str(uuid4()),
+            "guid": str(uuid4()),
+        }
+
+        try:
+            response = requests.post(url, headers=headers, data=data).text
+
+            if '"email_is_taken"' in response:
+                print(Fore.GREEN + f'Good User: {user}')  
+                a += 1
+
+                message = f'''
+-> Good User Instagram
+------------------------------------------
+-> User : {user}
+------------------------------------------
+-> dev : LEGEND
+------------------------------------------
+'''
+                # Send to Telegram
+                requests.post(f'https://api.telegram.org/bot{token}/sendMessage', data={'chat_id': chat_id, 'text': message})
+                
+                # Send to Discord webhook
+                send_to_discord(user)
+            else:
+                s += 1
+
+            print(f"\r{Fore.GREEN}Good ✅ {a} | {Fore.RED}Ban ❌ {s}", end='', flush=True)
+            
+        except requests.exceptions.RequestException:
+            time.sleep(0.5)
+
 print(f"{Fore.GREEN}Good ✅ 0 | {Fore.RED}Ban ❌ 0\n")
-print(f"{Fore.CYAN}Starting with rate limit of {MAX_REQUESTS_PER_MINUTE} requests per minute")
-
-# Create proxies.txt file if it doesn't exist
-if not os.path.exists(os.path.join(os.path.dirname(__file__), 'proxies.txt')):
-    with open(os.path.join(os.path.dirname(__file__), 'proxies.txt'), 'w') as f:
-        f.write("# Add your proxies here, one per line in format: ip:port or user:pass@ip:port\n")
-    print(f"{Fore.YELLOW}Created proxies.txt file. Add your proxies there for better performance.")
-
-# Reduce number of threads to avoid rate limiting
-thread_count = 5  # Reduced from 20 to 5
 threads = []
-for _ in range(thread_count):  
+for _ in range(20):  
     t = threading.Thread(target=a1)
     threads.append(t)
     t.start()
